@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
@@ -40,19 +40,22 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Grant execute permission for gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make gradlew executable
         run: chmod +x factory/android/gradlew
 
-      - name: Build APK with Gradle
+      - name: Build APK
         run: |
           cd factory/android
           if [ "${{ env.BUILD_TYPE }}" = "release" ]; then
-            ./gradlew assembleRelease --no-daemon
+            ./gradlew assembleRelease
           else
-            ./gradlew assembleDebug --no-daemon
+            ./gradlew assembleDebug
           fi
 
-      - name: Verify APK
+      - name: Verify and Locate APK
         run: |
           if [ "${{ env.BUILD_TYPE }}" = "release" ]; then
             APK_PATH="factory/android/app/build/outputs/apk/release/app-release.apk"
