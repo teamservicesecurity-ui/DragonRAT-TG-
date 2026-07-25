@@ -46,7 +46,7 @@ jobs:
       - name: Setup Gradle Cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Ensure Gradlew Exists
+      - name: Ensure Gradlew Exists with Gradle 8.5
         run: |
           cd factory/android
           if [ ! -f "gradlew" ]; then
@@ -59,9 +59,9 @@ jobs:
         run: |
           cd factory/android
           if [ "${{ env.BUILD_TYPE }}" = "release" ]; then
-            ./gradlew assembleRelease --stacktrace
+            ./gradlew assembleRelease -Pandroid.defaults.buildfeatures.buildconfig=true
           else
-            ./gradlew assembleDebug --stacktrace
+            ./gradlew assembleDebug -Pandroid.defaults.buildfeatures.buildconfig=true
           fi
 
       - name: Verify and Locate APK
