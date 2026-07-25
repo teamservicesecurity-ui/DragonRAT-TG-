@@ -3,25 +3,7 @@ name: Build Base APK
 on:
   push:
     branches: [main]
-    paths:
-      - 'factory/android/**'
-      - '.github/workflows/build-base-apk.yml'
   workflow_dispatch:
-    inputs:
-      build_type:
-        description: 'Build type'
-        required: true
-        default: 'release'
-        type: choice
-        options:
-          - debug
-          - release
-
-permissions:
-  contents: read
-
-env:
-  BUILD_TYPE: ${{ github.event.inputs.build_type || 'release' }}
 
 jobs:
   build:
@@ -31,53 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x factory/android/gradlew
-
-      - name: Build APK with Stacktrace
+      - name: Debug Directory Structure
         run: |
-          cd factory/android
-          if [ "${{ env.BUILD_TYPE }}" = "release" ]; then
-            ./gradlew assembleRelease --stacktrace
-          else
-            ./gradlew assembleDebug --stacktrace
-          fi
-
-      - name: Verify and Locate APK
-        run: |
-          if [ "${{ env.BUILD_TYPE }}" = "release" ]; then
-            APK_PATH="factory/android/app/build/outputs/apk/release/app-release.apk"
-          else
-            APK_PATH="factory/android/app/build/outputs/apk/debug/app-debug.apk"
-          fi
-
-          if [ ! -f "$APK_PATH" ]; then
-            echo "❌ APK file not found at expected path: $APK_PATH"
-            echo "Printing actual build output directory contents:"
-            ls -R factory/android/app/build/outputs/ || true
-            exit 1
-          fi
-
-          APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
-          echo "✅ APK built successfully: $APK_PATH ($APK_SIZE)"
-          echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-${{ env.BUILD_TYPE }}-apk
-          path: ${{ env.APK_PATH }}
-          retention-days: 30
+          echo "=== Root Contents ==="
+          ls -la
+          echo "=== Searching for gradlew ==="
+          find . -name "gradlew"
           
