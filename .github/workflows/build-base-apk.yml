@@ -50,8 +50,8 @@ jobs:
         run: |
           cd factory/android
           if [ ! -f "gradlew" ]; then
-            echo "⚠️ gradlew not found. Generating wrapper..."
-            gradle wrapper
+            echo "⚠️ gradlew not found. Generating modern Gradle 8.5 wrapper..."
+            gradle wrapper --gradle-version 8.5
           fi
           chmod +x gradlew
 
