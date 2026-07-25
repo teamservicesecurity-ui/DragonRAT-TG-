@@ -59,9 +59,9 @@ jobs:
         run: |
           cd factory/android
           if [ "${{ env.BUILD_TYPE }}" = "release" ]; then
-            ./gradlew assembleRelease
+            ./gradlew assembleRelease --stacktrace
           else
-            ./gradlew assembleDebug
+            ./gradlew assembleDebug --stacktrace
           fi
 
       - name: Verify and Locate APK
