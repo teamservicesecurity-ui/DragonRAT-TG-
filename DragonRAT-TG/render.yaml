@@ -2,6 +2,7 @@ services:
   - type: web
     name: dragon-rat-tg
     env: docker
+    dockerfilePath: ./DragonRAT-TG/Dockerfile
     plan: free
     region: ohio
     healthCheckPath: /health
