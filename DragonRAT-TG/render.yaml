@@ -2,7 +2,6 @@ services:
   - type: web
     name: dragon-rat-tg
     env: docker
-    repo: https://github.com/yourusername/DragonRAT-TG
     plan: free
     region: ohio
     healthCheckPath: /health
