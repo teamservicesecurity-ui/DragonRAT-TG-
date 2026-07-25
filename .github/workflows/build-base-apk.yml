@@ -18,7 +18,7 @@ on:
           - release
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   BUILD_TYPE: ${{ github.event.inputs.build_type || 'release' }}
@@ -26,26 +26,24 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 17
-      
+          java-version: '17'
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-      
+
       - name: Grant execute permission for gradlew
         run: chmod +x factory/android/gradlew
-      
-      - name: Build APK with ProGuard
+
+      - name: Build APK with Gradle
         run: |
           cd factory/android
           if [ "${{ env.BUILD_TYPE }}" = "release" ]; then
@@ -53,9 +51,7 @@ jobs:
           else
             ./gradlew assembleDebug --no-daemon
           fi
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-      
+
       - name: Verify APK
         run: |
           if [ "${{ env.BUILD_TYPE }}" = "release" ]; then
@@ -63,42 +59,20 @@ jobs:
           else
             APK_PATH="factory/android/app/build/outputs/apk/debug/app-debug.apk"
           fi
-          
+
           if [ ! -f "$APK_PATH" ]; then
-            echo "❌ APK build failed — file not found"
+            echo "❌ APK build failed — file not found at $APK_PATH"
             exit 1
           fi
-          
+
           APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
-          echo "✅ APK built: $APK_PATH ($APK_SIZE)"
+          echo "✅ APK built successfully: $APK_PATH ($APK_SIZE)"
           echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
-          echo "APK_SIZE=$APK_SIZE" >> $GITHUB_ENV
-      
-      - name: Copy APK to factory base
-        run: |
-          TARGET_DIR="factory/baseApp"
-          mkdir -p "$TARGET_DIR"
-          cp "${{ env.APK_PATH }}" "$TARGET_DIR/base.apk"
-          echo "✅ Copied base.apk to $TARGET_DIR/"
-      
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dragon-rat-${{ env.BUILD_TYPE }}-apk
+          name: app-${{ env.BUILD_TYPE }}-apk
           path: ${{ env.APK_PATH }}
           retention-days: 30
-      
-      - name: Commit base.apk to repository
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add factory/baseApp/base.apk
-          
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: update base.apk (${{ env.BUILD_TYPE }}) [skip ci]"
-            git push origin HEAD:${{ github.ref }}
-            echo "✅ base.apk committed to repository"
-          fi
